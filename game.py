@@ -14,6 +14,10 @@ base_font = pygame.font.Font(None, 32)
 user_text = '>'
 display_text = 'Text description of room'
 title_text = 'Dungeon'
+quit_text = 'Quit Game'
+quit_modal_text = 'Quit Game?'
+quit_modal_yes_text = 'Yes'
+quit_modal_no_text = 'No'
 map_text = 'Connected Rooms'
 inventory_text = 'Inventory'
 test_nav_text_1 = 'N: Dungeon Cell 1'
@@ -26,12 +30,11 @@ help_text_3 = '/look'
 
 map_help = 'Click on a location to move there'
 inventory_help = 'Click an item for more information'
-first_start_help_text = 'Enter text at the > prompt or'
+first_start_help_text = 'Escape the dungeon! To navigate, enter text at the > prompt or'
 first_start_help_2_text = 'click the navigation icons under Connected Rooms!'
 
 # rectangles for blocking off UI areas
 help_rect = pygame.Rect(screen_width * 0.6 - 100, screen_height - 100, 100, 100)                    # help text rectangle
-title_rect = pygame.Rect(0, 0, screen_width * 0.6, screen_height * 0.1)                             # room title rectangle
 inventory_rect = pygame.Rect(screen_width * 0.6, 10, screen_width * 0.4 - 10, 225)                  # inventory rectangle
 map_rect = pygame.Rect(screen_width * 0.6, 250, screen_width * 0.4 - 10, 250)                       # map rectangle
 input_rect = pygame.Rect(screen_width * 0.6, screen_height - 32 - 5, screen_width * 0.4 - 10, 32)   # input rectangle
@@ -43,6 +46,12 @@ nav_text_1_rect = pygame.Rect(screen_width * 0.6, 255 + 32, screen_width * 0.4 -
 nav_text_2_rect = pygame.Rect(screen_width * 0.6, 255 + 64, screen_width * 0.4 - 10, 32)
 nav_text_3_rect = pygame.Rect(screen_width * 0.6, 255 + 96, screen_width * 0.4 - 10, 32)
 
+title_rect = pygame.Rect(0, 36, screen_width * 0.6, screen_height * 0.1)                             # room title rectangle
+quit_rect = pygame.Rect(0, 0, 130, 36)                                                               # quit button rect
+quit_modal_rect = pygame.Rect(screen_width // 2 - 100, screen_height // 2 - 100, 250, 100)           # quit modal rect
+quit_modal_yes = pygame.Rect(screen_width // 2 - 100 + 5, screen_height // 2 - 30, 50, 32)           # yes button rect
+quit_modal_no = pygame.Rect(screen_width // 2 - 100 + 55, screen_height // 2 - 30, 50, 32)           # no button rect
+
 inv_desc_rect = pygame.Rect(screen_width * 0.6 + 5, 15, screen_width * 0.4 - 10, 32)
 
 # colors
@@ -52,6 +61,7 @@ color = color_passive
 output_color = pygame.Color('red')
 map_color = pygame.Color('blue')
 inventory_color = pygame.Color('green')
+quit_color = pygame.Color('red')
 
 # flags for drawing/highlighting
 active = False
@@ -59,6 +69,7 @@ draw_help_box = False
 draw_map_help = False
 draw_inventory_help = False
 first_start_help = True
+draw_quit_modal = False
 
 # image path
 path_to_image = 'images/dungeon.jpeg'
@@ -90,10 +101,18 @@ while True:
                 draw_map_help = True
             elif inventory_rect.collidepoint(event.pos):
                 draw_inventory_help = True
+            elif quit_rect.collidepoint(event.pos):
+                draw_quit_modal = True
+
+            # quit modal - if user clicks yes, then quit
+            elif draw_quit_modal and quit_modal_yes.collidepoint(event.pos):
+                pygame.quit()
+
             else:
                 draw_map_help = False
                 draw_inventory_help = False
                 active = False
+                draw_quit_modal = False
 
         # keyboard input
         if event.type == pygame.KEYDOWN:
@@ -118,6 +137,11 @@ while True:
     # draw the room title
     title_text_surface = base_font.render(title_text, True, (255, 255, 255))
     screen.blit(title_text_surface, (title_rect.x, title_rect.y))
+
+    # draw the quit button
+    pygame.draw.rect(screen, quit_color, quit_rect, 0)
+    quit_text_surface = base_font.render(quit_text, True, (255, 255, 255))
+    screen.blit(quit_text_surface, (quit_rect.x, quit_rect.y))
 
     # draw the room image
     image = pygame.transform.scale(pygame.image.load(path_to_image), [int(width) * 0.6, int(height) * 0.9])
@@ -177,6 +201,21 @@ while True:
     pygame.draw.rect(screen, output_color, output_rect, 2)
     output_text_surface = base_font.render(display_text, True, (255,255,255))
     screen.blit(output_text_surface, (output_rect.x + 5, output_rect.y + 5))
+
+    # draw the quit modal if needed - use width == 0 to fill
+    if draw_quit_modal:
+        pygame.draw.rect(screen, (0,0,0), quit_modal_rect, 0)
+        quit_modal_surface = base_font.render(quit_modal_text, True, (255,255,255))
+        screen.blit(quit_modal_surface, (quit_modal_rect.x+5, quit_modal_rect.y+5))
+
+        pygame.draw.rect(screen, (pygame.Color('red')), quit_modal_yes, 0)
+        quit_modal_yes_surface = base_font.render(quit_modal_yes_text, True, (0,0,0))
+        screen.blit(quit_modal_yes_surface, (quit_modal_yes.x+5, quit_modal_yes.y+5))
+
+        pygame.draw.rect(screen, (pygame.Color('green')), quit_modal_no, 0)
+        quit_modal_no_surface = base_font.render(quit_modal_no_text, True, (255,255,255))
+        screen.blit(quit_modal_no_surface, (quit_modal_no.x+5, quit_modal_no.y+5))
+
 
     # update the screen
     pygame.display.flip()
